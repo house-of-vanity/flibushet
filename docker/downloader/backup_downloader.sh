@@ -8,8 +8,9 @@ for file in ${TABLES_BACKUP_LIST[@]}; do
   aria2c https://flibusta.is/sql/"${file}"
 done
 
+rm -f *.gz *.sql
 gzip -d *.gz
-cat *sql > full.sql
+cat *.sql > full.sql
 
 cat > ~/.my.cnf <<EOF
 [client]
