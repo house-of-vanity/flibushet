@@ -1,0 +1,55 @@
+# Use root/example as user/password credentials
+version: '3.1'
+
+services:
+  mysql-db:
+    image: mariadb
+    hostname: mysql-db
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+
+  pg-db:
+    image: postgres:alpine
+    restart: always
+    hostname: pg-db
+    environment:
+      POSTGRES_PASSWORD: root
+      POSTGRES_USER: root
+      POSTGRES_DB: books
+    ports:
+      - 5432:5432
+    expose:
+      - 5432
+
+  downloader:
+    build: downloader/
+    environment:
+      TABLES_BACKUP_LIST: >
+        lib.libavtor.sql.gz
+        lib.libtranslator.sql.gz
+        lib.libavtorname.sql.gz
+        lib.libbook.sql.gz
+        lib.libfilename.sql.gz
+        lib.libgenre.sql.gz
+        lib.libgenrelist.sql.gz
+        lib.libjoinedbooks.sql.gz
+        lib.librate.sql.gz
+        lib.librecs.sql.gz
+        lib.libseqname.sql.gz
+        lib.libseq.sql.gz
+    links:
+      - "mysql-db"
+    healthcheck:
+      test: [ "CMD", "ls", "/KHUI" ]
+      interval: 1s
+      timeout: 1s
+      retries: 10000
+    depends_on:
+      - mysql-db
+
+  pg-loader:
+    image: dimitri/pgloader:latest
+    depends_on:
+      downloader:
+        condition: service_healthy
+    entrypoint: pgloader mysql://root:root@mysql-db/books postgresql://root:root@pg-db/books
