@@ -1,5 +1,4 @@
-# Use root/example as user/password credentials
-version: '3.1'
+version: '3.7'
 
 services:
   mysql-db:
@@ -49,7 +48,9 @@ services:
 
   pg-loader:
     image: dimitri/pgloader:latest
+    entrypoint: pgloader mysql://root:root@mysql-db/books postgresql://root:root@pg-db/books
     depends_on:
       downloader:
         condition: service_healthy
-    entrypoint: pgloader mysql://root:root@mysql-db/books postgresql://root:root@pg-db/books
+      pg-db:
+        condition: service_started
