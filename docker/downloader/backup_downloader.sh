@@ -3,12 +3,13 @@ set -e
 
 SLEEP=120
 
+rm -f *.gz *.sql
 for file in ${TABLES_BACKUP_LIST[@]}; do
   echo Downloading "${file}"
   aria2c https://flibusta.is/sql/"${file}"
 done
 
-rm -f *.gz *.sql
+
 gzip -d *.gz
 cat *.sql > full.sql
 
